@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>מעקב תרגילים — אולי (Ollie) 🐕</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #FAF8F5; --card: #FFFFFF; --text: #2D2A26; --text-soft: #6B6560;
+    --accent: #D4854A; --accent-light: #F5E6D8; --green: #5A8F6B; --green-light: #E3F0E7;
+    --red: #C25B5B; --red-light: #F5E0E0; --border: #E8E4DF;
+    --shadow: 0 2px 12px rgba(45,42,38,0.06);
+  }
+  body {
+    font-family: 'Heebo', sans-serif; background: linear-gradient(180deg, var(--bg) 0%, #F0EDE8 100%);
+    color: var(--text); line-height: 1.6; padding: 16px 12px 80px; -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .container { max-width: 880px; margin: 0 auto; }
+
+  /* Loading */
+  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; }
+  .loading-paw { font-size: 48px; animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+  .loading-text { margin-top: 14px; font-size: 15px; color: var(--text-soft); }
+
+  /* Header */
+  .header {
+    border-radius: 18px; padding: 28px 20px; text-align: center;
+    background: linear-gradient(135deg, var(--accent-light) 0%, var(--green-light) 100%);
+    margin-bottom: 16px; position: relative; overflow: hidden;
+  }
+  .header::before { content: '🐾'; position: absolute; font-size: 100px; opacity: 0.06; top: -15px; left: 15px; }
+  .header-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .badges { display: flex; justify-content: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .badge { padding: 3px 14px; border-radius: 14px; font-size: 12px; font-weight: 500; }
+  .badge-week { background: rgba(255,255,255,0.8); color: var(--accent); }
+  .badge-save { background: var(--accent-light); color: var(--accent); transition: all 0.3s; }
+  .badge-save.saved { background: var(--green-light); color: var(--green); }
+  .badge-save.error { background: var(--red-light); color: var(--red); }
+
+  /* Stats */
+  .stats-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .stat-card {
+    flex: 1; background: var(--card); border-radius: 14px; padding: 16px 18px;
+    box-shadow: var(--shadow); border: 1px solid var(--border); min-width: 90px;
+  }
+  .stat-num { font-size: 26px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+  .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+  .progress-sub { font-size: 12px; color: var(--text-soft); font-weight: 400; }
+  .progress-track { width: 100%; height: 8px; background: #F3F1EE; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .celebration {
+    text-align: center; font-size: 15px; font-weight: 600; color: var(--green);
+    background: var(--green-light); border-radius: 12px; padding: 10px 16px; margin-bottom: 16px;
+  }
+
+  /* Table */
+  .table-card {
+    background: var(--card); border-radius: 16px; box-shadow: var(--shadow);
+    border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
+  }
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    padding: 12px 8px; font-weight: 600; font-size: 12px; color: #fff;
+    background: var(--accent); border-bottom: 2px solid #C07840; white-space: nowrap;
+  }
+  th.cmd-col { text-align: right; padding-right: 14px; min-width: 140px; position: sticky; right: 0; z-index: 2; }
+  th.day-col { text-align: center; min-width: 72px; }
+  th.stat-col { text-align: center; min-width: 80px; }
+  td { border-bottom: 1px solid #F3F1EE; vertical-align: middle; }
+  tr:nth-child(even) td { background: #FDFCFA; }
+  tr:nth-child(odd) td { background: #fff; }
+  td.cmd-cell {
+    padding: 12px 14px; font-weight: 600; font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+    position: sticky; right: 0; z-index: 1;
+  }
+  tr:nth-child(even) td.cmd-cell { background: #FDFCFA; }
+  tr:nth-child(odd) td.cmd-cell { background: #fff; }
+  td.day-cell { text-align: center; padding: 8px 4px; }
+  td.stat-cell { text-align: center; padding: 8px 10px; }
+
+  .cell-inner { display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .pm-btn {
+    width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
+    background: #FDFCFA; color: var(--text-soft); font-size: 15px; font-weight: 700;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    padding: 0; line-height: 1; transition: opacity 0.15s; font-family: system-ui;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pm-btn:disabled { opacity: 0.25; cursor: default; }
+  .pm-btn:active:not(:disabled) { background: #F3F1EE; }
+  .count-circle {
+    width: 34px; height: 34px; border-radius: 8px; border: none;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0; font-family: 'Heebo', sans-serif;
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .count-circle.active { background: var(--green); color: #fff; box-shadow: 0 2px 8px rgba(90,143,107,0.25); }
+  .count-circle.inactive { background: #F3F1EE; color: #A09890; }
+  .count-circle.pop { transform: scale(1.15); }
+
+  .mini-track { width: 100%; height: 4px; background: #F3F1EE; border-radius: 2px; overflow: hidden; margin: 3px 0; }
+  .mini-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
+  .mini-days { font-size: 10px; color: #A09890; }
+  .hint { text-align: center; font-size: 12px; color: #A09890; padding: 10px 12px; border-top: 1px solid #F3F1EE; }
+
+  /* Notes */
+  .notes-card {
+    background: var(--card); border-radius: 16px; padding: 18px 22px;
+    margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border);
+  }
+  .notes-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .notes-title { font-size: 15px; font-weight: 600; }
+  textarea {
+    width: 100%; border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; font-size: 14px; font-family: 'Heebo', sans-serif;
+    color: var(--text); resize: vertical; outline: none; direction: rtl;
+    line-height: 1.7; background: #FDFCFA;
+  }
+  textarea:focus { border-color: var(--accent); }
+
+  /* Footer */
+  .footer { text-align: center; padding-top: 4px; }
+  .reset-btn {
+    background: none; border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px 20px; font-size: 13px; color: var(--text-soft); cursor: pointer;
+    font-family: 'Heebo', sans-serif; transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .reset-btn:active { background: #F3F1EE; }
+  .footer-note { margin-top: 10px; font-size: 11px; color: #A09890; }
+  .conn-status { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; vertical-align: middle; }
+  .conn-online { background: var(--green); }
+  .conn-offline { background: var(--red); }
+
+  @media (max-width: 480px) {
+    .header h1 { font-size: 19px; }
+    .stat-num { font-size: 22px; }
+    th.day-col { min-width: 64px; font-size: 11px; }
+    .pm-btn { width: 22px; height: 22px; font-size: 14px; }
+    .count-circle { width: 30px; height: 30px; font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+  <div class="loading">
+    <div class="loading-paw">🐾</div>
+    <div class="loading-text">טוען...</div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyDRDwhRlI5apfWPGa8VDJoRF5jg_Lf9aJs",
+  authDomain: "ollie-training.firebaseapp.com",
+  databaseURL: "https://ollie-training-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "ollie-training",
+  storageBucket: "ollie-training.firebasestorage.app",
+  messagingSenderId: "495373451953",
+  appId: "1:495373451953:web:36af0ac9532067a3961890"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// Data
+const COMMANDS = [
+  { id: "crate", name: "כלוב — למקום", emoji: "🏠" },
+  { id: "luring", name: "לורינג (Luring)", emoji: "🎯" },
+  { id: "stay", name: "להישאר בחדר", emoji: "🚪" },
+  { id: "zen", name: "דזן", emoji: "🧘" },
+  { id: "shaping", name: "שייפינג (Shaping)", emoji: "✨" },
+];
+
+const DAYS = [
+  { id: "sun", full: "יום א׳" },
+  { id: "mon", full: "יום ב׳" },
+  { id: "tue", full: "יום ג׳" },
+  { id: "wed", full: "יום ד׳" },
+  { id: "thu", full: "יום ה׳" },
+  { id: "fri", full: "יום ו׳" },
+  { id: "sat", full: "שבת" },
+];
+
+const MAX_SESSIONS = 10;
+
+function getWeekId() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const diff = now - start;
+  return `${now.getFullYear()}-W${Math.ceil(diff / 604800000)}`;
+}
+
+// State
+let state = { counts: {}, notes: "" };
+let weekId = getWeekId();
+let saveTimeout = null;
+let isOnline = true;
+
+// Firebase ref
+const weekRef = db.ref(`weeks/${weekId}`);
+
+// Listen for realtime changes
+weekRef.on("value", (snapshot) => {
+  const data = snapshot.val();
+  if (data) {
+    state.counts = data.counts || {};
+    state.notes = data.notes || "";
+  } else {
+    state.counts = {};
+    state.notes = "";
+  }
+  render();
+});
+
+// Connection status
+db.ref(".info/connected").on("value", (snap) => {
+  isOnline = snap.val() === true;
+  updateConnectionBadge();
+});
+
+function saveToFirebase() {
+  weekRef.set({
+    counts: state.counts,
+    notes: state.notes,
+    updated: new Date().toISOString()
+  }).then(() => {
+    showSaveStatus("saved");
+  }).catch(() => {
+    showSaveStatus("error");
+  });
+}
+
+function showSaveStatus(status) {
+  const badge = document.getElementById("save-badge");
+  if (!badge) return;
+  badge.className = `badge badge-save ${status}`;
+  if (status === "saving") badge.textContent = "💾 שומר...";
+  else if (status === "saved") badge.textContent = "✓ נשמר";
+  else if (status === "error") badge.textContent = "✗ שגיאה";
+  badge.style.display = "inline-block";
+  if (status !== "saving") {
+    setTimeout(() => { badge.style.display = "none"; }, 1500);
+  }
+}
+
+function updateConnectionBadge() {
+  const dot = document.getElementById("conn-dot");
+  if (dot) {
+    dot.className = `conn-status ${isOnline ? "conn-online" : "conn-offline"}`;
+    dot.title = isOnline ? "מחובר" : "לא מחובר";
+  }
+}
+
+function increment(cmdId, dayId) {
+  const key = `${cmdId}-${dayId}`;
+  const current = state.counts[key] || 0;
+  if (current < MAX_SESSIONS) {
+    state.counts[key] = current + 1;
+    animateCell(key);
+    saveToFirebase();
+  }
+}
+
+function decrement(cmdId, dayId) {
+  const key = `${cmdId}-${dayId}`;
+  const current = state.counts[key] || 0;
+  if (current > 0) {
+    state.counts[key] = current - 1;
+    saveToFirebase();
+    render();
+  }
+}
+
+function animateCell(key) {
+  render();
+  const el = document.getElementById(`count-${key}`);
+  if (el) {
+    el.classList.add("pop");
+    setTimeout(() => el.classList.remove("pop"), 300);
+  }
+}
+
+function onNotesChange(e) {
+  state.notes = e.target.value;
+  showSaveStatus("saving");
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => saveToFirebase(), 800);
+}
+
+function resetWeek() {
+  if (confirm("לאפס את כל הסימונים של השבוע הזה?")) {
+    state.counts = {};
+    state.notes = "";
+    saveToFirebase();
+  }
+}
+
+function getStats() {
+  const totalSessions = Object.values(state.counts).reduce((a, b) => a + b, 0);
+  const activeCells = Object.values(state.counts).filter(v => v > 0).length;
+  const totalCells = COMMANDS.length * DAYS.length;
+  const coverage = totalCells > 0 ? (activeCells / totalCells) * 100 : 0;
+  return { totalSessions, activeCells, totalCells, coverage };
+}
+
+function getCmdStats(cmdId) {
+  let total = 0, activeDays = 0;
+  DAYS.forEach(d => {
+    const v = state.counts[`${cmdId}-${d.id}`] || 0;
+    total += v;
+    if (v > 0) activeDays++;
+  });
+  return { total, activeDays, pct: (activeDays / DAYS.length) * 100 };
+}
+
+function render() {
+  const s = getStats();
+  const progressBg = s.coverage === 100
+    ? "linear-gradient(90deg, #5A8F6B, #78B88A)"
+    : "linear-gradient(90deg, #D4854A, #E8A76E)";
+
+  let tableRows = "";
+  COMMANDS.forEach((cmd, ci) => {
+    const cs = getCmdStats(cmd.id);
+    let dayCells = "";
+    DAYS.forEach(d => {
+      const key = `${cmd.id}-${d.id}`;
+      const val = state.counts[key] || 0;
+      const activeClass = val > 0 ? "active" : "inactive";
+      dayCells += `
+        <td class="day-cell">
+          <div class="cell-inner">
+            <button class="pm-btn" onclick="decrement('${cmd.id}','${d.id}')" ${val === 0 ? "disabled" : ""}>−</button>
+            <button class="count-circle ${activeClass}" id="count-${key}" onclick="increment('${cmd.id}','${d.id}')">${val}</button>
+            <button class="pm-btn" onclick="increment('${cmd.id}','${d.id}')" ${val >= MAX_SESSIONS ? "disabled" : ""}>+</button>
+          </div>
+        </td>`;
+    });
+    const fillColor = cs.pct === 100 ? "var(--green)" : "var(--accent)";
+    tableRows += `
+      <tr>
+        <td class="cmd-cell"><span style="font-size:16px">${cmd.emoji}</span> ${cmd.name}</td>
+        ${dayCells}
+        <td class="stat-cell">
+          <div style="font-size:16px;font-weight:700">${cs.total}</div>
+          <div class="mini-track"><div class="mini-fill" style="width:${cs.pct}%;background:${fillColor}"></div></div>
+          <div class="mini-days">${cs.activeDays}/7 ימים</div>
+        </td>
+      </tr>`;
+  });
+
+  let dayHeaders = "";
+  DAYS.forEach(d => { dayHeaders += `<th class="day-col">${d.full}</th>`; });
+
+  const celebration = s.coverage === 100
+    ? `<div class="celebration">🎉 כל הכבוד! תרגלתם את כל הפקודות בכל ימות השבוע!</div>` : "";
+
+  document.getElementById("app").innerHTML = `
+    <div class="header">
+      <div class="header-row">
+        <span style="font-size:30px">🐕</span>
+        <h1>מעקב תרגילים — Ollie</h1>
+      </div>
+      <div class="badges">
+        <span class="badge badge-week">${weekId} <span class="conn-status ${isOnline ? 'conn-online' : 'conn-offline'}" id="conn-dot" title="${isOnline ? 'מחובר' : 'לא מחובר'}"></span></span>
+        <span class="badge badge-save" id="save-badge" style="display:none"></span>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num">${s.totalSessions}</div>
+        <div class="stat-label">סשנים</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">${Math.round(s.coverage)}%</div>
+        <div class="stat-label">כיסוי</div>
+      </div>
+      <div class="stat-card" style="flex:2">
+        <div class="progress-header">
+          <span>התקדמות שבועית</span>
+          <span class="progress-sub">${s.activeCells}/${s.totalCells}</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${s.coverage}%;background:${progressBg}"></div>
+        </div>
+      </div>
+    </div>
+
+    ${celebration}
+
+    <div class="table-card">
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th class="cmd-col">פקודה</th>${dayHeaders}<th class="stat-col">סה״כ</th></tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+      <div class="hint">לחצו + כדי להוסיף סשן, − כדי להוריד. אפשר כמה סשנים ביום!</div>
+    </div>
+
+    <div class="notes-card">
+      <div class="notes-head">
+        <span>📝</span>
+        <span class="notes-title">הערות</span>
+      </div>
+      <textarea rows="4" placeholder="רשמו הערות, תובנות, או דברים לשאול את אירית..." oninput="onNotesChange(event)">${state.notes}</textarea>
+    </div>
+
+    <div class="footer">
+      <button class="reset-btn" onclick="resetWeek()">🔄 אפס שבוע</button>
+      <div class="footer-note">נתונים מסונכרנים בזמן אמת 🔄 כל שינוי שתעשו — יוליה רואה מיד, וההפך</div>
+    </div>
+  `;
+
+  // Restore cursor position in textarea
+  const ta = document.querySelector("textarea");
+  if (ta && document.activeElement !== ta) {
+    // Don't interfere if user is typing
+  }
+}
+</script>
+</body>
+</html>
