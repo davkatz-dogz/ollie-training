@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ollie's Training — Ayala</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage: #7DAE8C;
+    --sage-light: #E8F2EB;
+    --sage-dark: #5A8A69;
+    --bg: #FAFAF7;
+    --card: #FFFFFF;
+    --text: #2C2C2C;
+    --text-muted: #7A7A72;
+    --amber: #E8A838;
+    --amber-light: #FEF6E4;
+    --coral: #E07B6A;
+    --coral-light: #FDECEA;
+    --blue: #6B9FD4;
+    --blue-light: #EAF2FB;
+    --border: #EAEAE4;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --radius: 16px;
+    --bottom-nav: 68px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: calc(var(--bottom-nav) + 16px);
+  }
+
+  .header {
+    background: var(--sage);
+    padding: 16px 20px 12px;
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .header h1 { font-size: 19px; font-weight: 800; color: white; line-height: 1; }
+  .header-sub { font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+  .paw { font-size: 24px; }
+  .role-badge {
+    background: rgba(255,255,255,0.25); color: white;
+    font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 20px;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .role-badge.trainer { background: var(--amber); color: #2C2C2C; }
+
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: var(--bottom-nav);
+    background: white; border-top: 1px solid var(--border);
+    display: flex; z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px; cursor: pointer; color: var(--text-muted);
+    font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.03em;
+    border: none; background: none; padding: 6px 2px;
+    transition: color 0.15s;
+  }
+  .nav-item .nav-icon { font-size: 20px; line-height: 1; }
+  .nav-item.active { color: var(--sage-dark); }
+
+  .page { display: none; padding: 14px; }
+  .page.active { display: block; }
+
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 12px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-muted); margin-bottom: 12px;
+  }
+
+  input, textarea, select {
+    font-family: 'Nunito', sans-serif;
+    width: 100%; border: 2px solid var(--border);
+    border-radius: 10px; padding: 10px 14px;
+    font-size: 15px; color: var(--text);
+    background: var(--bg); transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--sage); }
+  textarea { resize: vertical; min-height: 72px; }
+
+  .trainer-picker { display: flex; gap: 10px; }
+  .trainer-btn {
+    flex: 1; padding: 10px;
+    border: 2px solid var(--border); border-radius: 10px;
+    background: var(--bg); font-family: 'Nunito', sans-serif;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    color: var(--text-muted); transition: all 0.15s;
+  }
+  .trainer-btn.active { border-color: var(--sage); background: var(--sage-light); color: var(--sage-dark); }
+
+  .mood-row { display: flex; gap: 5px; justify-content: space-between; }
+  .mood-btn {
+    flex: 1; padding: 8px 2px;
+    border: 2px solid var(--border); border-radius: 12px;
+    background: var(--bg); font-size: 20px; cursor: pointer;
+    text-align: center; transition: all 0.15s;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .mood-btn span.mood-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 8px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .mood-btn.active { border-color: var(--sage); background: var(--sage-light); transform: scale(1.05); }
+
+  .exercise-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 12px; border: 2px solid var(--border);
+    border-radius: 12px; margin-bottom: 8px;
+    background: var(--bg); transition: border-color 0.15s;
+  }
+  .exercise-item.done { border-color: var(--sage); background: var(--sage-light); }
+  .exercise-check {
+    width: 26px; height: 26px; border: 2px solid var(--border);
+    border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0; background: white; transition: all 0.15s;
+  }
+  .exercise-item.done .exercise-check { background: var(--sage); border-color: var(--sage); color: white; }
+  .exercise-name { flex: 1; font-size: 14px; font-weight: 600; }
+  .exercise-item.done .exercise-name { color: var(--sage-dark); }
+  .rep-counter { display: flex; align-items: center; gap: 5px; }
+  .rep-btn {
+    width: 28px; height: 28px; border: 2px solid var(--border);
+    border-radius: 8px; background: white; font-size: 17px;
+    font-weight: 700; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; color: var(--text-muted);
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .rep-btn:active { transform: scale(0.92); }
+  .rep-count {
+    font-family: 'DM Mono', monospace; font-size: 14px;
+    font-weight: 500; min-width: 22px; text-align: center;
+  }
+
+  .duration-display {
+    font-family: 'DM Mono', monospace; font-size: 26px;
+    font-weight: 500; color: var(--sage-dark); text-align: center; margin-bottom: 6px;
+  }
+  input[type=range] { padding: 6px 0; border: none; background: none; accent-color: var(--sage); }
+
+  .food-entry {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 12px; border: 2px solid var(--border);
+    border-radius: 12px; margin-bottom: 8px; background: var(--bg);
+  }
+  .food-type-badge {
+    font-size: 10px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.05em; padding: 3px 7px; border-radius: 6px;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .food-type-badge.meal { background: var(--sage-light); color: var(--sage-dark); }
+  .food-type-badge.snack { background: var(--amber-light); color: #C47A10; }
+  .food-entry-detail { flex: 1; }
+  .food-entry-main { font-size: 14px; font-weight: 600; }
+  .food-entry-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .food-remove { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted); padding: 0 4px; }
+
+  .quality-row { display: flex; gap: 6px; }
+  .quality-btn {
+    flex: 1; padding: 8px 4px; border: 2px solid var(--border);
+    border-radius: 10px; background: var(--bg); font-size: 18px;
+    cursor: pointer; text-align: center; transition: all 0.15s;
+  }
+  .quality-btn.active { border-color: var(--amber); background: var(--amber-light); }
+
+  .submit-btn {
+    width: 100%; padding: 15px; background: var(--sage); border: none;
+    border-radius: 14px; color: white; font-family: 'Nunito', sans-serif;
+    font-size: 16px; font-weight: 800; cursor: pointer;
+    transition: background 0.15s, transform 0.1s; margin-top: 4px;
+  }
+  .submit-btn:active { transform: scale(0.98); background: var(--sage-dark); }
+  .submit-btn:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+  .add-btn {
+    width: 100%; padding: 10px; background: none;
+    border: 2px dashed var(--border); border-radius: 12px;
+    color: var(--text-muted); font-family: 'Nunito', sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 4px;
+  }
+
+  /* HISTORY */
+  .history-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 14px; margin-bottom: 10px;
+    box-shadow: var(--shadow); border-left: 4px solid var(--sage);
+  }
+  .history-card.has-comment { border-left-color: var(--amber); }
+  .history-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .history-date { font-size: 13px; font-weight: 800; color: var(--sage-dark); }
+  .history-trainer { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .history-mood { font-size: 20px; }
+  .history-exercises { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .ex-chip {
+    background: var(--sage-light); color: var(--sage-dark);
+    font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+  }
+  .ex-chip .rep-small { font-family: 'DM Mono', monospace; font-size: 11px; opacity: 0.8; }
+  .history-food { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .history-notes { font-size: 13px; color: var(--text); }
+  .history-duration { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .trainer-comment-box {
+    background: var(--amber-light); border-radius: 10px; padding: 10px 12px;
+    margin-top: 10px; border-left: 3px solid var(--amber);
+  }
+  .trainer-comment-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #C47A10; margin-bottom: 4px; }
+  .trainer-comment-text { font-size: 13px; color: var(--text); }
+  .add-comment-area { margin-top: 10px; }
+  .add-comment-area textarea { font-size: 13px; min-height: 60px; margin-bottom: 8px; }
+  .comment-save-btn {
+    padding: 8px 18px; background: var(--amber); border: none;
+    border-radius: 8px; color: white; font-family: 'Nunito', sans-serif;
+    font-size: 13px; font-weight: 800; cursor: pointer;
+  }
+
+  /* PLAN */
+  .plan-phase {
+    background: var(--card); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow);
+  }
+  .phase-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .phase-name { font-size: 16px; font-weight: 800; }
+  .phase-badge {
+    font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .phase-badge.current { background: var(--sage-light); color: var(--sage-dark); }
+  .phase-badge.upcoming { background: var(--border); color: var(--text-muted); }
+  .plan-exercise-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .plan-exercise-row:last-child { border-bottom: none; }
+  .plan-ex-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .plan-ex-name { font-size: 14px; font-weight: 700; }
+  .plan-ex-goal { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .trainer-add-exercise { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px; }
+  .trainer-add-exercise input { margin-bottom: 8px; }
+  .add-ex-btn {
+    padding: 9px 16px; background: var(--sage); border: none;
+    border-radius: 10px; color: white; font-family: 'Nunito', sans-serif;
+    font-size: 13px; font-weight: 800; cursor: pointer;
+  }
+  .delete-ex-btn {
+    background: none; border: none; font-size: 16px; cursor: pointer;
+    color: var(--text-muted); padding: 0 4px; flex-shrink: 0; margin-top: 2px;
+  }
+
+  /* NOTES */
+  .note-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow);
+    border-left: 4px solid var(--amber);
+  }
+  .note-meta { font-size: 10px; font-weight: 800; color: #C47A10; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+  .note-text { font-size: 14px; line-height: 1.6; }
+  .note-tag {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px; margin-right: 4px; margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .note-tag.behavior { background: var(--sage-light); color: var(--sage-dark); }
+  .note-tag.food { background: var(--amber-light); color: #C47A10; }
+  .note-tag.potty { background: var(--blue-light); color: #3A70A8; }
+  .note-tag.health { background: var(--coral-light); color: #B85547; }
+  .note-tag.general { background: var(--border); color: var(--text-muted); }
+
+  /* POTTY TAB */
+  .potty-log-entry {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border: 2px solid var(--border);
+    border-radius: 12px; margin-bottom: 8px; background: var(--bg);
+  }
+  .potty-type-icon { font-size: 22px; flex-shrink: 0; }
+  .potty-entry-detail { flex: 1; }
+  .potty-entry-main { font-size: 14px; font-weight: 700; }
+  .potty-entry-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  .potty-remove { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted); }
+  .potty-type-row { display: flex; gap: 8px; }
+  .potty-type-btn {
+    flex: 1; padding: 12px 6px; border: 2px solid var(--border);
+    border-radius: 12px; background: var(--bg);
+    font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+    cursor: pointer; color: var(--text-muted); text-align: center;
+    transition: all 0.15s;
+  }
+  .potty-type-btn .pt-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+  .potty-type-btn.active.pee { border-color: var(--blue); background: var(--blue-light); color: #3A70A8; }
+  .potty-type-btn.active.poop { border-color: var(--coral); background: var(--coral-light); color: #B85547; }
+  .potty-type-btn.active.both { border-color: var(--amber); background: var(--amber-light); color: #C47A10; }
+  .potty-location-row { display: flex; gap: 8px; margin-top: 0; }
+  .loc-btn {
+    flex: 1; padding: 9px 4px; border: 2px solid var(--border);
+    border-radius: 10px; background: var(--bg);
+    font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
+    cursor: pointer; color: var(--text-muted); text-align: center; transition: all 0.15s;
+  }
+  .loc-btn.active { border-color: var(--sage); background: var(--sage-light); color: var(--sage-dark); }
+
+  .daily-summary {
+    background: var(--card); border-radius: var(--radius);
+    padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow);
+  }
+  .daily-summary-header {
+    font-size: 12px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 10px;
+  }
+  .summary-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .summary-chip {
+    font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+  }
+  .summary-chip.pee { background: var(--blue-light); color: #3A70A8; }
+  .summary-chip.poop { background: var(--coral-light); color: #B85547; }
+  .summary-chip.both { background: var(--amber-light); color: #C47A10; }
+  .summary-chip.meal-chip { background: var(--sage-light); color: var(--sage-dark); }
+  .summary-chip.snack-chip { background: var(--amber-light); color: #C47A10; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    z-index: 200; display: none; align-items: flex-end;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet {
+    background: white; width: 100%;
+    border-radius: 20px 20px 0 0; padding: 22px 18px 38px;
+  }
+  .modal-title { font-size: 17px; font-weight: 800; margin-bottom: 16px; }
+  .modal-field { margin-bottom: 12px; }
+  .modal-field label {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 5px;
+  }
+  .type-toggle { display: flex; gap: 8px; }
+  .type-toggle-btn {
+    flex: 1; padding: 10px; border: 2px solid var(--border); border-radius: 10px;
+    background: var(--bg); font-family: 'Nunito', sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text-muted); transition: all 0.15s;
+  }
+  .type-toggle-btn.active.meal { border-color: var(--sage); background: var(--sage-light); color: var(--sage-dark); }
+  .type-toggle-btn.active.snack { border-color: var(--amber); background: var(--amber-light); color: #C47A10; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+  .modal-cancel {
+    flex: 1; padding: 13px; background: var(--bg); border: 2px solid var(--border);
+    border-radius: 12px; font-family: 'Nunito', sans-serif;
+    font-size: 14px; font-weight: 700; cursor: pointer; color: var(--text-muted);
+  }
+  .modal-confirm {
+    flex: 2; padding: 13px; background: var(--sage); border: none;
+    border-radius: 12px; color: white; font-family: 'Nunito', sans-serif;
+    font-size: 14px; font-weight: 800; cursor: pointer;
+  }
+  .modal-confirm.potty { background: var(--blue); }
+
+  .toast {
+    position: fixed; bottom: calc(var(--bottom-nav) + 12px);
+    left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #2C2C2C; color: white;
+    padding: 11px 20px; border-radius: 30px;
+    font-size: 13px; font-weight: 700;
+    opacity: 0; transition: all 0.3s; z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .loading-spinner { text-align: center; padding: 36px; color: var(--text-muted); font-size: 14px; }
+  .section-gap { height: 8px; }
+
+  .date-nav {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .date-nav-btn {
+    background: var(--card); border: 2px solid var(--border);
+    border-radius: 10px; padding: 7px 14px;
+    font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; color: var(--text-muted);
+  }
+  .date-nav-label {
+    flex: 1; text-align: center; font-size: 15px; font-weight: 800; color: var(--text);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="paw">🐾</span>
+    <div>
+      <div style="font-size:19px;font-weight:800;color:white;line-height:1;">Ollie's Training</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:2px;" id="header-sub">Loading...</div>
+    </div>
+  </div>
+  <div class="role-badge" id="role-badge">Owner</div>
+</div>
+
+<!-- LOG PAGE -->
+<div class="page active" id="page-log">
+  <div class="card">
+    <div class="card-title">Who's Training Today?</div>
+    <div class="trainer-picker">
+      <button class="trainer-btn active" id="btn-yulia" onclick="selectTrainer('Yuliya')">👩 Yuliya</button>
+      <button class="trainer-btn" id="btn-david" onclick="selectTrainer('David')">👨 David</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Ollie's Energy 🐶</div>
+    <div class="mood-row">
+      <div class="mood-btn" onclick="selectMood('😴','Low')" id="mood-Low">😴<span class="mood-label">Low</span></div>
+      <div class="mood-btn" onclick="selectMood('😌','Calm')" id="mood-Calm">😌<span class="mood-label">Calm</span></div>
+      <div class="mood-btn" onclick="selectMood('😊','Good')" id="mood-Good">😊<span class="mood-label">Good</span></div>
+      <div class="mood-btn" onclick="selectMood('🤩','Great')" id="mood-Great">🤩<span class="mood-label">Great</span></div>
+      <div class="mood-btn" onclick="selectMood('🌪️','Hyper')" id="mood-Hyper">🌪️<span class="mood-label">Hyper</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Session Duration</div>
+    <div class="duration-display" id="duration-display">10 min</div>
+    <input type="range" min="5" max="60" step="5" value="10" oninput="updateDuration(this.value)" style="width:100%">
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px;"><span>5 min</span><span>60 min</span></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Exercises Practiced</div>
+    <div id="exercise-list"><div class="loading-spinner">Loading exercises...</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Food & Snacks</div>
+    <div id="food-log-list"></div>
+    <button class="add-btn" onclick="openFoodModal('meal')">🍽️ Add Meal</button>
+    <div class="section-gap"></div>
+    <button class="add-btn" onclick="openFoodModal('snack')">🦴 Add Snack / Treat</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Notes for Ayala</div>
+    <textarea id="session-notes" placeholder="What worked, what didn't, how Ollie seemed..."></textarea>
+  </div>
+  <button class="submit-btn" id="submit-btn" onclick="submitSession()">Save Session ✓</button>
+</div>
+
+<!-- HISTORY PAGE -->
+<div class="page" id="page-history">
+  <div id="history-list"><div class="loading-spinner">Loading...</div></div>
+</div>
+
+<!-- PLAN PAGE -->
+<div class="page" id="page-plan">
+  <div id="plan-content"><div class="loading-spinner">Loading plan...</div></div>
+</div>
+
+<!-- POTTY & FOOD TAB -->
+<div class="page" id="page-potty">
+  <div class="date-nav">
+    <button class="date-nav-btn" onclick="shiftPottyDay(-1)">◀</button>
+    <div class="date-nav-label" id="potty-date-label">Today</div>
+    <button class="date-nav-btn" onclick="shiftPottyDay(1)">▶</button>
+  </div>
+  <div id="potty-summary-block"></div>
+  <div class="card">
+    <div class="card-title">Log Potty 🚽</div>
+    <div class="potty-type-row">
+      <button class="potty-type-btn pee" id="pt-pee" onclick="setPottyType('pee')"><span class="pt-icon">💧</span>Pee</button>
+      <button class="potty-type-btn poop" id="pt-poop" onclick="setPottyType('poop')"><span class="pt-icon">💩</span>Poop</button>
+      <button class="potty-type-btn both" id="pt-both" onclick="setPottyType('both')"><span class="pt-icon">🎯</span>Both</button>
+    </div>
+    <div class="section-gap"></div>
+    <div class="potty-location-row">
+      <button class="loc-btn" id="loc-outside" onclick="setPottyLoc('Outside 🌳')">🌳 Outside</button>
+      <button class="loc-btn" id="loc-inside" onclick="setPottyLoc('Inside 🏠')">🏠 Inside</button>
+    </div>
+    <div class="section-gap"></div>
+    <input type="time" id="potty-time">
+    <div class="section-gap"></div>
+    <textarea id="potty-notes" placeholder="Optional note — e.g. 'went for a walk, nothing outside, peed 2 min after we got home'" style="min-height:56px"></textarea>
+    <div class="section-gap"></div>
+    <button class="submit-btn" style="margin-top:0" onclick="logPotty()">Log Potty</button>
+  </div>
+  <div id="potty-log-list"><div class="loading-spinner">Loading logs...</div></div>
+</div>
+
+<!-- NOTES PAGE -->
+<div class="page" id="page-notes">
+  <div id="notes-content"><div class="loading-spinner">Loading...</div></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" id="nav-log" onclick="switchPage('log')"><span class="nav-icon">✏️</span>Log</button>
+  <button class="nav-item" id="nav-history" onclick="switchPage('history')"><span class="nav-icon">📋</span>History</button>
+  <button class="nav-item" id="nav-plan" onclick="switchPage('plan')"><span class="nav-icon">🎯</span>Plan</button>
+  <button class="nav-item" id="nav-potty" onclick="switchPage('potty')"><span class="nav-icon">🚽</span>Potty</button>
+  <button class="nav-item" id="nav-notes" onclick="switchPage('notes')"><span class="nav-icon">💬</span>Notes</button>
+</nav>
+
+<!-- FOOD MODAL -->
+<div class="modal-overlay" id="food-modal" onclick="closeFoodModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-title" id="modal-title">Add Meal</div>
+    <div class="modal-field">
+      <label>Type</label>
+      <div class="type-toggle">
+        <button class="type-toggle-btn active meal" id="food-type-meal" onclick="setFoodType('meal')">🍽️ Meal</button>
+        <button class="type-toggle-btn snack" id="food-type-snack" onclick="setFoodType('snack')">🦴 Snack/Treat</button>
+      </div>
+    </div>
+    <div class="modal-field"><label>Time</label><input type="time" id="food-time"></div>
+    <div class="modal-field"><label>What did she eat?</label><input type="text" id="food-what" placeholder="e.g. Farmina kibble, cucumber slice..."></div>
+    <div class="modal-field">
+      <label>How well did she eat?</label>
+      <div class="quality-row" id="quality-row">
+        <button class="quality-btn" onclick="setQuality(1)" id="q1">😒</button>
+        <button class="quality-btn" onclick="setQuality(2)" id="q2">😐</button>
+        <button class="quality-btn" onclick="setQuality(3)" id="q3">😋</button>
+        <button class="quality-btn" onclick="setQuality(4)" id="q4">🤩</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeFoodModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmFood()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, update, remove, get }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDRDwhRlI5apfWPGa8VDJoRF5jg_Lf9aJs",
+  authDomain: "ollie-training.firebaseapp.com",
+  databaseURL: "https://ollie-training-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "ollie-training",
+  storageBucket: "ollie-training.firebasestorage.app",
+  messagingSenderId: "495373451953",
+  appId: "1:495373451953:web:36af0ac9532067a3961890"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ─── ROLE ────────────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const isTrainer = params.get('role') === 'trainer';
+window.isTrainer = isTrainer;
+document.getElementById('role-badge').textContent = isTrainer ? '🌿 Ayala' : '🏠 Owner';
+if (isTrainer) document.getElementById('role-badge').classList.add('trainer');
+document.getElementById('header-sub').textContent = isTrainer ? 'Trainer View' : 'Yuliya & David';
+
+// ─── SESSION STATE ───────────────────────────────────────────────
+window.sessionState = {
+  trainer: 'Yuliya', mood: null, moodEmoji: null,
+  duration: 10, exercises: {}, food: []
+};
+
+// ─── NAV ─────────────────────────────────────────────────────────
+window.switchPage = function(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('nav-' + page).classList.add('active');
+  if (page === 'history') loadHistory();
+  if (page === 'plan') loadPlan();
+  if (page === 'notes') loadNotes();
+  if (page === 'potty') { initPottyDate(); loadPottyDay(); }
+};
+
+// ─── LOG FORM ────────────────────────────────────────────────────
+window.selectTrainer = n => {
+  window.sessionState.trainer = n;
+  document.getElementById('btn-yulia').classList.toggle('active', n === 'Yuliya');
+  document.getElementById('btn-david').classList.toggle('active', n === 'David');
+};
+window.selectMood = (emoji, label) => {
+  window.sessionState.mood = label; window.sessionState.moodEmoji = emoji;
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mood-' + label).classList.add('active');
+};
+window.updateDuration = val => {
+  window.sessionState.duration = parseInt(val);
+  document.getElementById('duration-display').textContent = val + ' min';
+};
+
+// ─── EXERCISES ────────────────────────────────────────────────────
+let planExercises = [];
+function renderExerciseList(exercises) {
+  planExercises = exercises;
+  const c = document.getElementById('exercise-list');
+  if (!exercises || exercises.length === 0) {
+    c.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">No exercises yet — check the Plan tab.</div>`;
+    return;
+  }
+  c.innerHTML = exercises.map(ex => `
+    <div class="exercise-item" id="ex-item-${ex.id}">
+      <div class="exercise-check" onclick="toggleExercise('${ex.id}')"></div>
+      <div class="exercise-name">${ex.name}</div>
+      <div class="rep-counter">
+        <button class="rep-btn" onclick="changeReps('${ex.id}',-1)">−</button>
+        <span class="rep-count" id="reps-${ex.id}">0</span>
+        <button class="rep-btn" onclick="changeReps('${ex.id}',1)">+</button>
+      </div>
+    </div>`).join('');
+}
+window.toggleExercise = id => {
+  if (window.sessionState.exercises[id] !== undefined) { delete window.sessionState.exercises[id]; }
+  else { window.sessionState.exercises[id] = 0; }
+  const item = document.getElementById('ex-item-' + id);
+  const done = window.sessionState.exercises[id] !== undefined;
+  item.classList.toggle('done', done);
+  item.querySelector('.exercise-check').textContent = done ? '✓' : '';
+};
+window.changeReps = (id, delta) => {
+  if (window.sessionState.exercises[id] === undefined) {
+    window.sessionState.exercises[id] = 0;
+    const item = document.getElementById('ex-item-' + id);
+    item.classList.add('done');
+    item.querySelector('.exercise-check').textContent = '✓';
+  }
+  const v = Math.max(0, (window.sessionState.exercises[id] || 0) + delta);
+  window.sessionState.exercises[id] = v;
+  document.getElementById('reps-' + id).textContent = v;
+};
+
+// ─── FOOD (LOG PAGE) ──────────────────────────────────────────────
+let foodModal = { type: 'meal', quality: null };
+window.openFoodModal = type => {
+  foodModal = { type, quality: null };
+  setFoodType(type);
+  const now = new Date();
+  document.getElementById('food-time').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('food-what').value = '';
+  document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('food-modal').classList.add('open');
+};
+window.closeFoodModal = e => {
+  if (!e || e.target === document.getElementById('food-modal'))
+    document.getElementById('food-modal').classList.remove('open');
+};
+window.setFoodType = type => {
+  foodModal.type = type;
+  document.getElementById('food-type-meal').classList.toggle('active', type === 'meal');
+  document.getElementById('food-type-snack').classList.toggle('active', type === 'snack');
+  document.getElementById('modal-title').textContent = type === 'meal' ? 'Add Meal' : 'Add Snack / Treat';
+};
+window.setQuality = q => {
+  foodModal.quality = q;
+  document.querySelectorAll('.quality-btn').forEach((b, i) => b.classList.toggle('active', i + 1 === q));
+};
+window.confirmFood = () => {
+  const what = document.getElementById('food-what').value.trim();
+  if (!what) { showToast('Please describe what she ate'); return; }
+  const entry = { type: foodModal.type, time: document.getElementById('food-time').value, what, quality: foodModal.quality, id: Date.now() };
+  window.sessionState.food.push(entry);
+  renderFoodLog();
+  document.getElementById('food-modal').classList.remove('open');
+};
+function renderFoodLog() {
+  const qe = [null,'😒','😐','😋','🤩'];
+  document.getElementById('food-log-list').innerHTML = window.sessionState.food.map(f => `
+    <div class="food-entry">
+      <div class="food-type-badge ${f.type}">${f.type === 'meal' ? 'Meal' : 'Snack'}</div>
+      <div class="food-entry-detail">
+        <div class="food-entry-main">${f.what}</div>
+        <div class="food-entry-sub">${f.time}${f.quality ? ' · ' + qe[f.quality] : ''}</div>
+      </div>
+      <button class="food-remove" onclick="removeFood(${f.id})">×</button>
+    </div>`).join('');
+}
+window.removeFood = id => {
+  window.sessionState.food = window.sessionState.food.filter(f => f.id !== id);
+  renderFoodLog();
+};
+
+// ─── SUBMIT SESSION ───────────────────────────────────────────────
+window.submitSession = () => {
+  const s = window.sessionState;
+  if (!s.mood) { showToast('Please select Ollie\'s energy level'); return; }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  const exercisesDone = planExercises
+    .filter(ex => s.exercises[ex.id] !== undefined)
+    .map(ex => ({ id: ex.id, name: ex.name, reps: s.exercises[ex.id] || 0 }));
+  const session = {
+    timestamp: Date.now(),
+    date: new Date().toLocaleDateString('en-GB'),
+    time: new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }),
+    trainer: s.trainer, mood: s.mood, moodEmoji: s.moodEmoji,
+    duration: s.duration, exercises: exercisesDone, food: s.food,
+    notes: document.getElementById('session-notes').value.trim(), trainerComment: ''
+  };
+  push(ref(db, 'ayala-sessions'), session).then(() => {
+    showToast('✅ Session saved!');
+    btn.disabled = false; btn.textContent = 'Save Session ✓';
+    resetForm();
+  }).catch(() => { showToast('Error — check connection'); btn.disabled = false; btn.textContent = 'Save Session ✓'; });
+};
+function resetForm() {
+  window.sessionState = { trainer: window.sessionState.trainer, mood: null, moodEmoji: null, duration: 10, exercises: {}, food: [] };
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.exercise-item').forEach(i => i.classList.remove('done'));
+  document.querySelectorAll('.exercise-check').forEach(c => c.textContent = '');
+  document.querySelectorAll('.rep-count').forEach(c => c.textContent = '0');
+  document.getElementById('food-log-list').innerHTML = '';
+  document.getElementById('session-notes').value = '';
+  document.getElementById('duration-display').textContent = '10 min';
+}
+
+// ─── HISTORY ──────────────────────────────────────────────────────
+function loadHistory() {
+  const c = document.getElementById('history-list');
+  c.innerHTML = '<div class="loading-spinner">Loading...</div>';
+  get(ref(db, 'ayala-sessions')).then(snap => {
+    const data = snap.val();
+    if (!data) { c.innerHTML = '<div class="loading-spinner">No sessions yet. 🐾</div>'; return; }
+    const sessions = Object.entries(data).map(([k,v]) => ({key:k,...v})).sort((a,b) => b.timestamp - a.timestamp);
+    const qe = [null,'😒','😐','😋','🤩'];
+    c.innerHTML = sessions.map(s => {
+      const exChips = (s.exercises||[]).map(ex => `<div class="ex-chip">${ex.name} <span class="rep-small">×${ex.reps}</span></div>`).join('');
+      const foodLines = (s.food||[]).map(f => `${f.type==='meal'?'🍽️':'🦴'} ${f.time} ${f.what}${f.quality?' '+qe[f.quality]:''}`).join(' · ');
+      const commentSection = s.trainerComment
+        ? `<div class="trainer-comment-box"><div class="trainer-comment-label">🌿 Ayala's Note</div><div class="trainer-comment-text">${s.trainerComment}</div></div>`
+        : (isTrainer ? `<div class="add-comment-area"><textarea id="comment-${s.key}" placeholder="Add a note for Yuliya & David..."></textarea><button class="comment-save-btn" onclick="saveComment('${s.key}')">Post Note</button></div>` : '');
+      return `<div class="history-card${s.trainerComment?' has-comment':''}" id="card-${s.key}">
+        <div class="history-header">
+          <div><div class="history-date">${s.date} · ${s.time}</div><div class="history-trainer">by ${s.trainer}</div></div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="history-mood">${s.moodEmoji||'🐶'}</div>
+            ${!isTrainer ? `<button onclick="deleteSession('${s.key}')" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--text-muted);padding:2px 4px;" title="Delete session">🗑️</button>` : ''}
+          </div>
+        </div>
+        ${s.duration?`<div class="history-duration">⏱ ${s.duration} min</div>`:''}
+        ${exChips?`<div class="history-exercises">${exChips}</div>`:''}
+        ${foodLines?`<div class="history-food">${foodLines}</div>`:''}
+        ${s.notes?`<div class="history-notes">📝 ${s.notes}</div>`:''}
+        ${commentSection}
+      </div>`;
+    }).join('');
+  });
+}
+window.saveComment = key => {
+  const comment = document.getElementById('comment-' + key)?.value.trim();
+  if (!comment) return;
+  update(ref(db, 'ayala-sessions/' + key), { trainerComment: comment }).then(() => { showToast('✅ Comment saved!'); loadHistory(); });
+};
+window.deleteSession = key => {
+  if (!confirm('Delete this session? This cannot be undone.')) return;
+  remove(ref(db, 'ayala-sessions/' + key)).then(() => { showToast('Session deleted'); loadHistory(); });
+};
+
+// ─── PLAN ─────────────────────────────────────────────────────────
+// Ayala's session 1 plan — seeded on first load if plan doesn't exist
+const INITIAL_PLAN = {
+  phases: [
+    {
+      name: "Phase 1 — Foundation (Week 1–2)",
+      exercises: [
+        { id: "ex_quiet_reward", name: "Quiet = Reward", goal: "Ignore barking completely. When quiet → treat immediately. Vary treat timing." },
+        { id: "ex_departure_mat", name: "Departure desensitization", goal: "Lick mat near rug. Say 'bye bye', take 1 step back. Wait for calm signal or licking. Repeat step by step. 1× per person per day." },
+        { id: "ex_calm_return", name: "Calm return home", goal: "Enter, sit on sofa, greet calmly. Then take her for a walk." },
+        { id: "ex_potty_word", name: "Potty word training", goal: "Say 'תעשי פיפי' or 'תעשי קקי' quietly when she's about to go." },
+        { id: "ex_grooming", name: "Grooming habituation", goal: "Regular gentle brushing sessions — get her comfortable." }
+      ]
+    },
+    {
+      name: "Phase 2 — Building Duration",
+      exercises: []
+    }
+  ]
+};
+
+function loadPlan() {
+  const c = document.getElementById('plan-content');
+  get(ref(db, 'ayala-plan')).then(snap => {
+    let data = snap.val();
+    if (!data || !data.phases) {
+      // Seed with Ayala's initial plan
+      set(ref(db, 'ayala-plan'), INITIAL_PLAN).then(() => {
+        renderPlan(INITIAL_PLAN, c);
+        refreshExerciseList(INITIAL_PLAN);
+      });
+    } else {
+      renderPlan(data, c);
+      refreshExerciseList(data);
+    }
+  });
+}
+
+function refreshExerciseList(data) {
+  const allEx = (data.phases||[]).flatMap(p => (p.exercises||[]).map(ex => ({ id: ex.id, name: ex.name })));
+  renderExerciseList(allEx);
+}
+
+function renderPlan(data, container) {
+  const phases = data.phases || [];
+  let html = phases.map((phase, pi) => {
+    const exRows = (phase.exercises||[]).map((ex, ei) => `
+      <div class="plan-exercise-row">
+        <div class="plan-ex-icon">🐾</div>
+        <div style="flex:1">
+          <div class="plan-ex-name">${ex.name}</div>
+          ${ex.goal ? `<div class="plan-ex-goal">${ex.goal}</div>` : ''}
+        </div>
+        ${isTrainer ? `<button class="delete-ex-btn" onclick="deleteExercise(${pi},${ei})">×</button>` : ''}
+      </div>`).join('');
+    const addControls = isTrainer ? `
+      <div class="trainer-add-exercise">
+        <input type="text" id="new-ex-${pi}" placeholder="Exercise name...">
+        <div class="section-gap"></div>
+        <input type="text" id="new-ex-goal-${pi}" placeholder="Goal / description...">
+        <div class="section-gap"></div>
+        <button class="add-ex-btn" onclick="addExercise(${pi})">+ Add Exercise</button>
+      </div>` : '';
+    return `<div class="plan-phase">
+      <div class="phase-header">
+        <div class="phase-name">${phase.name}</div>
+        <div class="phase-badge ${pi===0?'current':'upcoming'}">${pi===0?'Current':'Upcoming'}</div>
+      </div>
+      ${exRows}
+      ${addControls}
+    </div>`;
+  }).join('');
+
+  if (isTrainer) {
+    html += `<div class="card">
+      <div class="card-title">Add New Phase</div>
+      <input type="text" id="new-phase-name" placeholder="Phase name...">
+      <div class="section-gap"></div>
+      <button class="add-ex-btn" onclick="addPhase()">Add Phase</button>
+    </div>`;
+  }
+  container.innerHTML = html;
+}
+
+window.addPhase = () => {
+  const name = document.getElementById('new-phase-name')?.value.trim();
+  if (!name) return;
+  get(ref(db, 'ayala-plan')).then(snap => {
+    const data = snap.val() || { phases: [] };
+    data.phases.push({ name, exercises: [] });
+    set(ref(db, 'ayala-plan'), data).then(() => { showToast('Phase added!'); loadPlan(); });
+  });
+};
+window.addExercise = pi => {
+  const name = document.getElementById(`new-ex-${pi}`)?.value.trim();
+  const goal = document.getElementById(`new-ex-goal-${pi}`)?.value.trim();
+  if (!name) return;
+  get(ref(db, 'ayala-plan')).then(snap => {
+    const data = snap.val() || { phases: [] };
+    if (!data.phases[pi].exercises) data.phases[pi].exercises = [];
+    data.phases[pi].exercises.push({ id: 'ex_' + Date.now(), name, goal: goal || '' });
+    set(ref(db, 'ayala-plan'), data).then(() => { showToast('Exercise added!'); loadPlan(); });
+  });
+};
+window.deleteExercise = (pi, ei) => {
+  if (!confirm('Delete this exercise?')) return;
+  get(ref(db, 'ayala-plan')).then(snap => {
+    const data = snap.val();
+    data.phases[pi].exercises.splice(ei, 1);
+    set(ref(db, 'ayala-plan'), data).then(() => { showToast('Deleted'); loadPlan(); });
+  });
+};
+
+// ─── POTTY TAB ────────────────────────────────────────────────────
+let pottyState = { type: null, location: null };
+let pottyDateOffset = 0;
+
+function getPottyDateKey(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().slice(0, 10).replace(/-/g, '_');
+}
+function getPottyDateLabel(offset) {
+  if (offset === 0) return 'Today';
+  if (offset === -1) return 'Yesterday';
+  const d = new Date(); d.setDate(d.getDate() + offset);
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+function initPottyDate() {
+  pottyDateOffset = 0;
+  document.getElementById('potty-date-label').textContent = 'Today';
+  const now = new Date();
+  document.getElementById('potty-time').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+}
+
+window.shiftPottyDay = delta => {
+  if (pottyDateOffset + delta > 0) return;
+  pottyDateOffset += delta;
+  document.getElementById('potty-date-label').textContent = getPottyDateLabel(pottyDateOffset);
+  loadPottyDay();
+};
+
+window.setPottyType = type => {
+  pottyState.type = type;
+  ['pee','poop','both'].forEach(t => document.getElementById('pt-' + t).classList.toggle('active', t === type));
+};
+window.setPottyLoc = loc => {
+  pottyState.location = loc;
+  document.getElementById('loc-outside').classList.toggle('active', loc.includes('Outside'));
+  document.getElementById('loc-inside').classList.toggle('active', loc.includes('Inside'));
+};
+
+window.logPotty = () => {
+  if (!pottyState.type) { showToast('Select pee, poop, or both'); return; }
+  if (!pottyState.location) { showToast('Select outside or inside'); return; }
+  const time = document.getElementById('potty-time').value;
+  const note = document.getElementById('potty-notes').value.trim();
+  const dateKey = getPottyDateKey(0);
+  const entry = { type: pottyState.type, location: pottyState.location, time, note, timestamp: Date.now() };
+  push(ref(db, `ayala-potty/${dateKey}`), entry).then(() => {
+    showToast(pottyState.type === 'pee' ? '💧 Logged!' : pottyState.type === 'poop' ? '💩 Logged!' : '🎯 Logged!');
+    document.getElementById('potty-notes').value = '';
+    loadPottyDay();
+  });
+};
+
+function loadPottyDay() {
+  const dateKey = getPottyDateKey(pottyDateOffset);
+  const logList = document.getElementById('potty-log-list');
+  logList.innerHTML = '<div class="loading-spinner">Loading...</div>';
+
+  get(ref(db, `ayala-potty/${dateKey}`)).then(snap => {
+    const data = snap.val();
+    const entries = data ? Object.entries(data).map(([k,v]) => ({key:k,...v})).sort((a,b) => a.time.localeCompare(b.time)) : [];
+
+    // Summary
+    const peeCount = entries.filter(e => e.type==='pee'||e.type==='both').length;
+    const poopCount = entries.filter(e => e.type==='poop'||e.type==='both').length;
+    const outsideCount = entries.filter(e => e.location?.includes('Outside')).length;
+    const insideCount = entries.filter(e => e.location?.includes('Inside')).length;
+
+    document.getElementById('potty-summary-block').innerHTML = `
+      <div class="daily-summary">
+        <div class="daily-summary-header">📊 ${getPottyDateLabel(pottyDateOffset)} Summary</div>
+        <div class="summary-chips">
+          ${peeCount ? `<div class="summary-chip pee">💧 Pee ×${peeCount}</div>` : ''}
+          ${poopCount ? `<div class="summary-chip poop">💩 Poop ×${poopCount}</div>` : ''}
+          ${outsideCount ? `<div class="summary-chip pee">🌳 Outside ×${outsideCount}</div>` : ''}
+          ${insideCount ? `<div class="summary-chip poop">🏠 Inside ×${insideCount}</div>` : ''}
+          ${entries.length === 0 ? '<div style="font-size:13px;color:var(--text-muted);">No logs yet.</div>' : ''}
+        </div>
+      </div>`;
+
+    if (entries.length === 0) { logList.innerHTML = ''; return; }
+    const icon = { pee: '💧', poop: '💩', both: '🎯' };
+    logList.innerHTML = `<div class="card"><div class="card-title">Log for ${getPottyDateLabel(pottyDateOffset)}</div>` +
+      entries.map(e => `
+        <div class="potty-log-entry" style="${e.note ? 'align-items:flex-start;' : ''}">
+          <div class="potty-type-icon">${icon[e.type]||'🐾'}</div>
+          <div class="potty-entry-detail">
+            <div class="potty-entry-main">${e.type.charAt(0).toUpperCase()+e.type.slice(1)} — ${e.location}</div>
+            <div class="potty-entry-sub">${e.time}</div>
+            ${e.note ? `<div style="font-size:12px;color:var(--text);margin-top:5px;font-style:italic;">📝 ${e.note}</div>` : ''}
+          </div>
+          ${pottyDateOffset===0?`<button class="potty-remove" onclick="deletePotty('${dateKey}','${e.key}')">×</button>`:''}
+        </div>`).join('') + `</div>`;
+  });
+}
+
+window.deletePotty = (dateKey, key) => {
+  remove(ref(db, `ayala-potty/${dateKey}/${key}`)).then(() => { showToast('Removed'); loadPottyDay(); });
+};
+
+// ─── NOTES PAGE ───────────────────────────────────────────────────
+// Ayala's session 1 notes — seeded once
+const SESSION1_NOTES = [
+  {
+    tag: 'behavior',
+    title: 'Barking — ignore & reward quiet',
+    text: 'When Ollie barks, ignore completely. The moment she is quiet, reward immediately with a treat. Vary the timing between treats depending on her state.'
+  },
+  {
+    tag: 'behavior',
+    title: 'Calming signals to watch for',
+    text: 'Signs of calm: mouth closed, not panting. Ayala noticed lip licking and mouth open/close. Look for other displacement signals.'
+  },
+  {
+    tag: 'behavior',
+    title: 'Departure practice — once per person per day',
+    text: 'Place a lick mat near her rug. Say "bye bye" and take one step back. Wait for a calming signal or for her to re-engage with the mat. Repeat one step at a time. Film every session and send to Ayala.'
+  },
+  {
+    tag: 'behavior',
+    title: 'Coming home — calm entry',
+    text: 'Come in, sit on the sofa, greet her calmly. You can take her for a walk right after returning (even if someone was home with her).'
+  },
+  {
+    tag: 'behavior',
+    title: 'Alone time — calming environment',
+    text: 'Music: "Through a Dog\'s Ear". Leave snacks in places she tends to hang out. Lick mat on floor or even on doors (suction). Toppings: tahini, peanut butter, white cheese, quality canned food. Adaptil collar — try for one month, then see if she worsens after it ends.'
+  },
+  {
+    tag: 'potty',
+    title: 'Potty routine & exhaustion method',
+    text: 'Take her out after play, after sleep, and a bit after eating. Go out at the time you\'ve identified she needs to go (e.g. 10:30). If she doesn\'t go in 5–10 minutes, come back inside and keep her on the leash. The moment she moves toward squatting, go outside immediately. Inside time must not exceed 15 minutes. Repeat until she goes outside. When she\'s about to go, say quietly: "תעשי פיפי" or "תעשי קקי".'
+  },
+  {
+    tag: 'potty',
+    title: 'Cleaning accidents indoors',
+    text: 'Use Sano Maxima Bio — mix with water in a spray bottle, spray on the spot, leave for a few minutes, then clean.'
+  },
+  {
+    tag: 'food',
+    title: 'Feeding schedule',
+    text: '3 meals per day for the next 2 weeks. At 6 months, transition gradually to 2 meals per day. Consider slightly increasing portion size — she may want a bit more food. Treats: divide into very small pieces. Avoid glycerin and sorbitol in treats — Ayala recommends making treats at home. Cucumbers and apples are great when you\'re in the kitchen.'
+  },
+  {
+    tag: 'health',
+    title: 'Health & genetics',
+    text: 'Order a full My Dog DNA panel — pay attention to MDR1. Do a genetic test before the heartworm vaccine. Ayala recommends waiting until 12–18 months before spaying.'
+  },
+  {
+    tag: 'general',
+    title: 'Grooming',
+    text: 'Get Ollie used to regular brushing. Consider a light trim.'
+  },
+  {
+    tag: 'general',
+    title: 'Film everything',
+    text: 'Record every training exercise (including alone-time practice) and send videos to Ayala.'
+  },
+  {
+    tag: 'general',
+    title: 'Daycare / boarding',
+    text: 'Ben\'s Zmir pension (חוף זמיר) recommended by Ayala.'
+  }
+];
+
+function loadNotes() {
+  const c = document.getElementById('notes-content');
+  get(ref(db, 'ayala-notes-v2')).then(snap => {
+    let notes = snap.val();
+    if (!notes) {
+      // Seed session 1 notes
+      const obj = {};
+      SESSION1_NOTES.forEach((n, i) => { obj['note_' + i] = { ...n, date: '15/06/2026', timestamp: Date.now() - (SESSION1_NOTES.length - i) * 1000 }; });
+      set(ref(db, 'ayala-notes-v2'), obj).then(() => renderNotes(SESSION1_NOTES.map((n,i) => ({ key:'note_'+i, ...n, date:'15/06/2026' })), c));
+    } else {
+      const arr = Object.entries(notes).map(([k,v]) => ({key:k,...v})).sort((a,b) => b.timestamp - a.timestamp);
+      renderNotes(arr, c);
+    }
+  });
+}
+
+function renderNotes(notes, container) {
+  const tagLabel = { behavior:'🐶 Behavior', food:'🍽️ Food', potty:'🚽 Potty', health:'❤️ Health', general:'📌 General' };
+  const trainerInput = isTrainer ? `
+    <div class="card">
+      <div class="card-title">Add Note for Yuliya & David</div>
+      <select id="new-note-tag" style="margin-bottom:8px">
+        <option value="behavior">🐶 Behavior</option>
+        <option value="food">🍽️ Food</option>
+        <option value="potty">🚽 Potty</option>
+        <option value="health">❤️ Health</option>
+        <option value="general">📌 General</option>
+      </select>
+      <input type="text" id="new-note-title" placeholder="Title..." style="margin-bottom:8px">
+      <textarea id="new-note-text" placeholder="Note text..."></textarea>
+      <div class="section-gap"></div>
+      <button class="submit-btn" style="margin-top:0" onclick="addNote()">Post Note</button>
+    </div>` : '';
+
+  const noteCards = notes.map(n => `
+    <div class="note-card">
+      <div class="note-meta">
+        <span class="note-tag ${n.tag}">${tagLabel[n.tag]||n.tag}</span>
+        ${n.date}
+      </div>
+      ${n.title ? `<div style="font-size:15px;font-weight:800;margin-bottom:6px;">${n.title}</div>` : ''}
+      <div class="note-text">${n.text}</div>
+    </div>`).join('');
+
+  container.innerHTML = trainerInput + noteCards;
+}
+
+window.addNote = () => {
+  const tag = document.getElementById('new-note-tag').value;
+  const title = document.getElementById('new-note-title').value.trim();
+  const text = document.getElementById('new-note-text').value.trim();
+  if (!text) return;
+  const entry = { tag, title, text, date: new Date().toLocaleDateString('en-GB'), timestamp: Date.now() };
+  push(ref(db, 'ayala-notes-v2'), entry).then(() => { showToast('Note posted!'); loadNotes(); });
+};
+
+// ─── TOAST ────────────────────────────────────────────────────────
+window.showToast = msg => {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+};
+
+// ─── INIT ─────────────────────────────────────────────────────────
+get(ref(db, 'ayala-plan')).then(snap => {
+  const data = snap.val();
+  if (data && data.phases) { refreshExerciseList(data); }
+  else { set(ref(db, 'ayala-plan'), INITIAL_PLAN).then(() => refreshExerciseList(INITIAL_PLAN)); }
+});
+
+const now = new Date();
+document.getElementById('potty-time').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+</script>
+</body>
+</html>
