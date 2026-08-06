@@ -493,6 +493,21 @@
     <button class="submit-btn" style="margin-top:0" onclick="logPotty()">Log Potty</button>
   </div>
   <div id="potty-log-list"><div class="loading-spinner">Loading logs...</div></div>
+  <div class="card" style="margin-top:4px;">
+    <div class="card-title">Export Report 📊</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Download all potty logs as a CSV file — opens directly in Excel or Google Sheets.</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">From</div>
+        <input type="date" id="export-from">
+      </div>
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">To</div>
+        <input type="date" id="export-to">
+      </div>
+    </div>
+    <button class="submit-btn" style="margin-top:0;background:var(--blue);" onclick="exportCSV()">⬇️ Download CSV</button>
+  </div>
 </div>
 
 <!-- NOTES PAGE -->
@@ -900,6 +915,11 @@ function initPottyDate() {
   document.getElementById('potty-date-label').textContent = 'Today';
   const now = new Date();
   document.getElementById('potty-time').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  // Default export range: last 30 days
+  const to = new Date();
+  const from = new Date(); from.setDate(from.getDate() - 30);
+  document.getElementById('export-to').value = to.toISOString().slice(0,10);
+  document.getElementById('export-from').value = from.toISOString().slice(0,10);
 }
 
 window.shiftPottyDay = delta => {
@@ -978,6 +998,59 @@ function loadPottyDay() {
 
 window.deletePotty = (dateKey, key) => {
   remove(ref(db, `ayala-potty/${dateKey}/${key}`)).then(() => { showToast('Removed'); loadPottyDay(); });
+};
+
+window.exportCSV = () => {
+  const fromVal = document.getElementById('export-from').value;
+  const toVal = document.getElementById('export-to').value;
+  if (!fromVal || !toVal) { showToast('Please select a date range'); return; }
+
+  const fromDate = new Date(fromVal);
+  const toDate = new Date(toVal);
+  if (fromDate > toDate) { showToast('From date must be before To date'); return; }
+
+  showToast('Preparing export...');
+
+  // Build list of date keys in range
+  const dateKeys = [];
+  const cursor = new Date(fromDate);
+  while (cursor <= toDate) {
+    dateKeys.push(cursor.toISOString().slice(0,10).replace(/-/g,'_'));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  // Fetch all days in parallel
+  Promise.all(dateKeys.map(dk => get(ref(db, `ayala-potty/${dk}`)).then(snap => ({ dk, data: snap.val() }))))
+    .then(results => {
+      const rows = [['Date', 'Time', 'Type', 'Location', 'Note']];
+      results.forEach(({ dk, data }) => {
+        if (!data) return;
+        const displayDate = dk.replace(/_/g, '-').split('-').reverse().join('/'); // DD/MM/YYYY
+        Object.values(data)
+          .sort((a,b) => a.time.localeCompare(b.time))
+          .forEach(e => {
+            rows.push([
+              displayDate,
+              e.time || '',
+              e.type ? e.type.charAt(0).toUpperCase() + e.type.slice(1) : '',
+              (e.location || '').replace(/[🌳🏠]/g, '').trim(),
+              (e.note || '').replace(/,/g, ';') // avoid breaking CSV
+            ]);
+          });
+      });
+
+      if (rows.length === 1) { showToast('No data in this date range'); return; }
+
+      const csv = rows.map(r => r.map(cell => `"${cell}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ollie-potty-${fromVal}-to-${toVal}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`✅ Downloaded ${rows.length - 1} entries`);
+    });
 };
 
 // ─── NOTES PAGE ───────────────────────────────────────────────────
