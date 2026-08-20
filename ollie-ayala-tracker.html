@@ -413,7 +413,7 @@
 </div>
 
 <!-- LOG PAGE -->
-<div class="page active" id="page-log">
+<div class="page" id="page-log">
   <div class="card">
     <div class="card-title">Who's Training Today?</div>
     <div class="trainer-picker">
@@ -465,8 +465,8 @@
   <div id="plan-content"><div class="loading-spinner">Loading plan...</div></div>
 </div>
 
-<!-- POTTY & FOOD TAB -->
-<div class="page" id="page-potty">
+<!-- POTTY & FOOD TAB (default page) -->
+<div class="page active" id="page-potty">
   <div class="date-nav">
     <button class="date-nav-btn" onclick="shiftPottyDay(-1)">◀</button>
     <div class="date-nav-label" id="potty-date-label">Today</div>
@@ -493,6 +493,36 @@
     <button class="submit-btn" style="margin-top:0" onclick="logPotty()">Log Potty</button>
   </div>
   <div id="potty-log-list"><div class="loading-spinner">Loading logs...</div></div>
+
+  <div class="card" style="margin-top:4px;">
+    <div class="card-title">Log Food 🍽️</div>
+    <div class="section-gap"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">Time</div>
+    <input type="time" id="food-intake-time">
+    <div class="section-gap"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">What she ate</div>
+    <input type="text" id="food-intake-what" value="Farmina kibble" placeholder="e.g. Farmina kibble, chicken treat...">
+    <div class="section-gap"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">Amount (grams)</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="rep-btn" style="width:36px;height:36px;font-size:20px;" onclick="adjustGrams(-5)">−</button>
+      <div style="flex:1;text-align:center;">
+        <span style="font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:var(--sage-dark);" id="grams-display">50</span>
+        <span style="font-size:14px;color:var(--text-muted);margin-left:4px;">gr</span>
+      </div>
+      <button class="rep-btn" style="width:36px;height:36px;font-size:20px;" onclick="adjustGrams(5)">+</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;">
+      <button onclick="setGrams(25)" style="flex:1;margin-right:4px;padding:7px;background:var(--bg);border:2px solid var(--border);border-radius:8px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--text-muted);">25g</button>
+      <button onclick="setGrams(50)" style="flex:1;margin-right:4px;padding:7px;background:var(--sage-light);border:2px solid var(--sage);border-radius:8px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--sage-dark);">50g ★</button>
+      <button onclick="setGrams(75)" style="flex:1;margin-right:4px;padding:7px;background:var(--bg);border:2px solid var(--border);border-radius:8px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--text-muted);">75g</button>
+      <button onclick="setGrams(100)" style="flex:1;padding:7px;background:var(--bg);border:2px solid var(--border);border-radius:8px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--text-muted);">100g</button>
+    </div>
+    <div class="section-gap"></div>
+    <button class="submit-btn" style="margin-top:0;background:var(--amber);" onclick="logFoodIntake()">Log Food</button>
+  </div>
+  <div id="food-intake-list"></div>
+
   <div class="card" style="margin-top:4px;">
     <div class="card-title">Export Report 📊</div>
     <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Download all potty logs as a CSV — opens in Excel or Google Sheets.</div>
@@ -517,10 +547,10 @@
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
-  <button class="nav-item active" id="nav-log" onclick="switchPage('log')"><span class="nav-icon">✏️</span>Log</button>
+  <button class="nav-item active" id="nav-potty" onclick="switchPage('potty')"><span class="nav-icon">🚽</span>Potty</button>
+  <button class="nav-item" id="nav-log" onclick="switchPage('log')"><span class="nav-icon">✏️</span>Log</button>
   <button class="nav-item" id="nav-history" onclick="switchPage('history')"><span class="nav-icon">📋</span>History</button>
   <button class="nav-item" id="nav-plan" onclick="switchPage('plan')"><span class="nav-icon">🎯</span>Plan</button>
-  <button class="nav-item" id="nav-potty" onclick="switchPage('potty')"><span class="nav-icon">🚽</span>Potty</button>
   <button class="nav-item" id="nav-notes" onclick="switchPage('notes')"><span class="nav-icon">💬</span>Notes</button>
 </nav>
 
@@ -596,7 +626,7 @@ window.switchPage = function(page) {
   if (page === 'history') loadHistory();
   if (page === 'plan') loadPlan();
   if (page === 'notes') loadNotes();
-  if (page === 'potty') { initPottyDate(); loadPottyDay(); }
+  if (page === 'potty') { initPottyDate(); loadPottyDay(); loadFoodIntakeDay(getPottyDateKey(0)); }
 };
 
 // ─── LOG FORM ────────────────────────────────────────────────────
@@ -914,7 +944,11 @@ function initPottyDate() {
   pottyDateOffset = 0;
   document.getElementById('potty-date-label').textContent = 'Today';
   const now = new Date();
-  document.getElementById('potty-time').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('potty-time').value = timeStr;
+  document.getElementById('food-intake-time').value = timeStr;
+  currentGrams = 50;
+  document.getElementById('grams-display').textContent = '50';
   // Default export range: last 30 days
   const to = new Date();
   const from = new Date(); from.setDate(from.getDate() - 30);
@@ -927,6 +961,7 @@ window.shiftPottyDay = delta => {
   pottyDateOffset += delta;
   document.getElementById('potty-date-label').textContent = getPottyDateLabel(pottyDateOffset);
   loadPottyDay();
+  loadFoodIntakeDay(getPottyDateKey(pottyDateOffset));
 };
 
 window.setPottyType = type => {
@@ -1000,18 +1035,64 @@ window.deletePotty = (dateKey, key) => {
   remove(ref(db, `ayala-potty/${dateKey}/${key}`)).then(() => { showToast('Removed'); loadPottyDay(); });
 };
 
+// ─── FOOD INTAKE ──────────────────────────────────────────────────
+let currentGrams = 50;
+
+window.adjustGrams = delta => {
+  currentGrams = Math.max(5, currentGrams + delta);
+  document.getElementById('grams-display').textContent = currentGrams;
+};
+window.setGrams = val => {
+  currentGrams = val;
+  document.getElementById('grams-display').textContent = val;
+};
+
+window.logFoodIntake = () => {
+  const time = document.getElementById('food-intake-time').value;
+  const what = document.getElementById('food-intake-what').value.trim() || 'Farmina kibble';
+  const dateKey = getPottyDateKey(0);
+  const entry = { time, what, grams: currentGrams, timestamp: Date.now() };
+  push(ref(db, `ayala-food/${dateKey}`), entry).then(() => {
+    showToast('🍽️ Food logged!');
+    loadFoodIntakeDay(dateKey);
+  });
+};
+
+function loadFoodIntakeDay(dateKey) {
+  const container = document.getElementById('food-intake-list');
+  if (!container) return;
+  get(ref(db, `ayala-food/${dateKey}`)).then(snap => {
+    const data = snap.val();
+    if (!data) { container.innerHTML = ''; return; }
+    const entries = Object.entries(data).map(([k,v]) => ({key:k,...v})).sort((a,b) => a.time.localeCompare(b.time));
+    const totalGrams = entries.reduce((sum, e) => sum + (e.grams || 0), 0);
+    container.innerHTML = `<div class="card">
+      <div class="card-title">Food Today <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--amber);">${totalGrams}g total</span></div>` +
+      entries.map(e => `
+        <div class="food-entry">
+          <div class="food-type-badge meal">Meal</div>
+          <div class="food-entry-detail">
+            <div class="food-entry-main">${e.what}</div>
+            <div class="food-entry-sub">${e.time} · <span style="font-family:'DM Mono',monospace;">${e.grams}g</span></div>
+          </div>
+          ${pottyDateOffset===0?`<button class="food-remove" onclick="deleteFoodEntry('${dateKey}','${e.key}')">×</button>`:''}
+        </div>`).join('') + `</div>`;
+  });
+}
+
+window.deleteFoodEntry = (dateKey, key) => {
+  remove(ref(db, `ayala-food/${dateKey}/${key}`)).then(() => { showToast('Removed'); loadFoodIntakeDay(dateKey); });
+};
+
 window.exportCSV = () => {
   const fromVal = document.getElementById('export-from').value;
   const toVal = document.getElementById('export-to').value;
   if (!fromVal || !toVal) { showToast('Please select a date range'); return; }
-
   const fromDate = new Date(fromVal);
   const toDate = new Date(toVal);
   if (fromDate > toDate) { showToast('From date must be before To date'); return; }
-
   showToast('Preparing export...');
 
-  // Build list of date keys in range
   const dateKeys = [];
   const cursor = new Date(fromDate);
   while (cursor <= toDate) {
@@ -1019,38 +1100,43 @@ window.exportCSV = () => {
     cursor.setDate(cursor.getDate() + 1);
   }
 
-  // Fetch all days in parallel
-  Promise.all(dateKeys.map(dk => get(ref(db, `ayala-potty/${dk}`)).then(snap => ({ dk, data: snap.val() }))))
-    .then(results => {
-      const rows = [['Date', 'Time', 'Type', 'Location', 'Note']];
-      results.forEach(({ dk, data }) => {
-        if (!data) return;
-        const displayDate = dk.replace(/_/g, '-').split('-').reverse().join('/'); // DD/MM/YYYY
-        Object.values(data)
-          .sort((a,b) => a.time.localeCompare(b.time))
-          .forEach(e => {
-            rows.push([
-              displayDate,
-              e.time || '',
-              e.type ? e.type.charAt(0).toUpperCase() + e.type.slice(1) : '',
-              (e.location || '').replace(/[🌳🏠]/g, '').trim(),
-              (e.note || '').replace(/,/g, ';') // avoid breaking CSV
-            ]);
-          });
+  Promise.all([
+    Promise.all(dateKeys.map(dk => get(ref(db, `ayala-potty/${dk}`)).then(snap => ({ dk, data: snap.val() })))),
+    Promise.all(dateKeys.map(dk => get(ref(db, `ayala-food/${dk}`)).then(snap => ({ dk, data: snap.val() }))))
+  ]).then(([pottyResults, foodResults]) => {
+    // Potty rows
+    const pottyRows = [['--- POTTY LOG ---'], ['Date','Time','Type','Location','Note']];
+    pottyResults.forEach(({ dk, data }) => {
+      if (!data) return;
+      const displayDate = dk.replace(/_/g,'-').split('-').reverse().join('/');
+      Object.values(data).sort((a,b) => a.time.localeCompare(b.time)).forEach(e => {
+        pottyRows.push([displayDate, e.time||'', e.type?e.type.charAt(0).toUpperCase()+e.type.slice(1):'', (e.location||'').replace(/[🌳🏠]/g,'').trim(), (e.note||'').replace(/,/g,';')]);
       });
-
-      if (rows.length === 1) { showToast('No data in this date range'); return; }
-
-      const csv = rows.map(r => r.map(cell => `"${cell}"`).join(',')).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ollie-potty-${fromVal}-to-${toVal}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast(`✅ Downloaded ${rows.length - 1} entries`);
     });
+
+    // Food rows
+    const foodRows = [[''], ['--- FOOD LOG ---'], ['Date','Time','What','Grams']];
+    foodResults.forEach(({ dk, data }) => {
+      if (!data) return;
+      const displayDate = dk.replace(/_/g,'-').split('-').reverse().join('/');
+      Object.values(data).sort((a,b) => a.time.localeCompare(b.time)).forEach(e => {
+        foodRows.push([displayDate, e.time||'', e.what||'', e.grams||'']);
+      });
+    });
+
+    const allRows = [...pottyRows, ...foodRows];
+    if (allRows.length <= 4) { showToast('No data in this date range'); return; }
+
+    const csv = allRows.map(r => r.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ollie-report-${fromVal}-to-${toVal}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`✅ Downloaded report`);
+  });
 };
 
 // ─── NOTES PAGE ───────────────────────────────────────────────────
@@ -1188,8 +1274,10 @@ get(ref(db, 'ayala-plan')).then(snap => {
   else { set(ref(db, 'ayala-plan'), INITIAL_PLAN).then(() => refreshExerciseList(INITIAL_PLAN)); }
 });
 
-const now = new Date();
-document.getElementById('potty-time').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+// Potty tab is default — init it on load
+initPottyDate();
+loadPottyDay();
+loadFoodIntakeDay(getPottyDateKey(0));
 </script>
 </body>
 </html>
